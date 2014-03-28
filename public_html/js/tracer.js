@@ -18,52 +18,31 @@ var tracer = (function() {
     */
    function intersect(ray, tri) {
 
-      /**
-       * Get cross product of two vectors
-       * @param {app.Point} v0
-       * @param {app.Point} v1
-       * @returns {app.Point}
-       */
-      function cross(v0, v1) {
-         var v = new math.Point();
-         v.x = (v0.y * v1.z) - (v0.z * v1.y);
-         v.y = (v0.z * v1.x) - (v0.x * v1.z);
-         v.z = (v0.x * v1.y) - (v0.y * v1.x);
-         return v;
-      }
+      var vec01 = math.subtract(tri.a, tri.b);
+      var vec12 = math.subtract(tri.b, tri.c);
 
-      /**
-       * Find dot product of two vectors
-       * @param {app.Point} v0
-       * @param {app.Point} v1
-       * @returns {Number}
-       */
-      function dot(v0, v1) {
-         return ((v0.x * v1.x) +
-                 (v0.y * v1.y) +
-                 (v0.z * v1.z));
-      }
+      var cross = math.normalize(math.cross(ray.dir, vec12));
+      var crossDot = math.dot(vec01, cross);
 
-      var vec01 = new math.Point(
-              tri.a.x - tri.b.x,
-              tri.a.y - tri.b.y,
-              tri.a.z - tri.b.z);
-
-      var vec12 = new math.Point(
-              tri.b.x - tri.c.x,
-              tri.b.y - tri.c.y,
-              tri.b.z - tri.c.z);
-
-      var triNormal = cross(vec01, vec12);
-
-      if (dot(ray, triNormal) > 0) {
-         return true;
-      }
-      else {
+      // Can't be parallel
+      if (crossDot > -0.0001 && crossDot < 0.00001) {
          return false;
       }
 
-      //return true;
+      var f = 1 / crossDot;
+      var vecPosToPoint = math.subtract(ray.o, tri.a);
+      var u = f * math.dot(vecPosToPoint, cross);
+
+      if (u < 0.0 || u > 1.0) {
+         return false;
+      }
+
+      var q = math.cross(vecPosToPoint, vec01);
+      var v = f * math.dot(ray.dir, q);
+
+      // TODO: Finish intersect function
+
+      return false;
    }
 
    /**
@@ -95,11 +74,8 @@ var tracer = (function() {
 self.onmessage = function(e) {
    if (e.data.type) {
       switch (e.data.type) {
+         // TODO: Reinstanciate objects with proper type when sent from parent to worker
          case "ray":
-//            self.postMessage({
-//               type: "info",
-//               message: "You want a ray cast"
-//            });
             if (tracer.castRay(JSON.parse(e.data.data))) {
                self.postMessage({
                   type: "info",
@@ -114,10 +90,6 @@ self.onmessage = function(e) {
             }
             break;
          case "tri":
-//            self.postMessage({
-//               type: "info",
-//               message: "You want to add a new tri"
-//            });
             tracer.addTri(JSON.parse(e.data.data));
             break;
          default :

@@ -6,20 +6,14 @@ var app = (function() {
    traceWorker.onmessage = function(e) {
       notifications.notify({
          title: e.data.type,
-         body: e.data.message
+         body: e.data.message,
+         duration: 5000
       });
       console.log(e.data);
    };
    exports.init = function() {
       document.getElementById("trace").addEventListener("click", exports.createRay);
       document.getElementById("tri").addEventListener("click", exports.createTri);
-      document.getElementById("notify").addEventListener("click", function() {
-         notifications.notify({
-            title: "Test",
-            body: "This is just a test and SHOULD disappear",
-            duration: 5000
-         });
-      });
    };
    exports.main = function() {
 
@@ -42,22 +36,38 @@ var app = (function() {
    };
    exports.createRay = function() {
       var ray = new math.Ray(
-              document.getElementById("rayX").value,
-              document.getElementById("rayY").value,
-              document.getElementById("rayZ").value);
+              new math.Point(
+                      document.getElementById("rayOriginX").value,
+                      document.getElementById("rayOriginY").value,
+                      document.getElementById("rayOriginX").value),
+              new math.Vect(
+                      document.getElementById("rayDirectionX").value,
+                      document.getElementById("rayDirectionY").value,
+                      document.getElementById("rayDirectionZ").value));
       traceWorker.postMessage({
          type: "ray",
-         data: JSON.stringify(ray)
+         data: JSON.stringify(ray),
+         duration: 5000
       });
    };
    exports.createTri = function() {
       var tri = new math.Triangle(
-              new math.Point(-1, -1, 0),
-              new math.Point(0, 1, 0),
-              new math.Point(1, -1, 0));
+              new math.Point(
+                      document.getElementById("triPoint1X").value,
+                      document.getElementById("triPoint1Y").value,
+                      document.getElementById("triPoint1Z").value),
+              new math.Point(
+                      document.getElementById("triPoint2X").value,
+                      document.getElementById("triPoint2Y").value,
+                      document.getElementById("triPoint2Z").value),
+              new math.Point(
+                      document.getElementById("triPoint3X").value,
+                      document.getElementById("triPoint3Y").value,
+                      document.getElementById("triPoint3Z").value));
       traceWorker.postMessage({
          type: "tri",
-         data: JSON.stringify(tri)
+         data: JSON.stringify(tri),
+         duration: 5000
       });
    };
 

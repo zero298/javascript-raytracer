@@ -1,0 +1,46 @@
+*{
+   font-family: Arial;
+}
+
+h1{
+   background: white;
+}
+
+fieldset{
+   max-width: 60em;
+   border-style: dashed;
+   border-color: white;
+   background: lightblue;
+   display: inline-block;
+   padding: 1em;
+   margin: 1em;
+}
+
+fieldset > fieldset{
+   width: 10em;
+   display: inline-table;
+}
+
+legend{
+   font-weight: bold;
+   background: white;
+}
+
+body{
+   background: grey;
+}
+
+button{
+   background: white;
+   border: 0px;
+   padding-left: 1em;
+   padding-right: 1em;
+   padding-top: 0.5em;
+   padding-bottom: 0.5em;
+   margin: .5em;
+   font-size: 1.5em;
+}
+
+input{
+   display: block;
+}

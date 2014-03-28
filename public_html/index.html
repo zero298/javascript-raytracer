@@ -1,28 +1,70 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <html>
    <head>
-      <title>TODO supply a title</title>
+      <title>Ray Tracer</title>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="css/main.css">
       <script src="js/notifications.js"></script>
       <script src="js/math.js"></script>
       <script src="js/main.js"></script>
    </head>
    <body>
-      <div>Ray Tracer</div>
+      <h1>Ray Tracer</h1>
       <fieldset>
-         <input id="rayX" type="text">
-         <input id="rayY" type="text">
-         <input id="rayZ" type="text">
+         <legend>Create Ray</legend>
+         <fieldset>
+            <legend>Origin</legend>
+            <label for="rayOriginX">Origin X</label>
+            <input id="rayOriginX" type="text" value="0">
+            <label for="rayOriginY">Origin Y</label>
+            <input id="rayOriginY" type="text" value="0">
+            <label for="rayOriginZ">Origin Z</label>
+            <input id="rayOriginZ" type="text" value="0">
+         </fieldset>
+         <fieldset>
+            <legend>Direction</legend>
+            <label for="rayDirectionX">Direction X</label>
+            <input id="rayDirectionX" type="text" value="0">
+            <label for="rayDirectionY">Direction Y</label>
+            <input id="rayDirectionY" type="text" value="0">
+            <label for="rayDirectionZ">Direction Z</label>
+            <input id="rayDirectionZ" type="text" value="1">
+         </fieldset>
          <button id="trace">Trace</button>
       </fieldset>
-      <button id="tri">Triangle</button>
-      <button id="notify">Notify</button>
+
+      <fieldset>
+         <legend>Create Triangle</legend>
+         <fieldset>
+            <legend>Point 1</legend>
+            <label>X</label>
+            <input id="triPoint1X" type="text" value="-1">
+            <label>Y</label>
+            <input id="triPoint1Y" type="text" value="-1">
+            <label>Z</label>
+            <input id="triPoint1Z" type="text" value="-5">
+         </fieldset>
+         <fieldset>
+            <legend>Point 2</legend>
+            <label>X</label>
+            <input id="triPoint2X" type="text" value="1">
+            <label>Y</label>
+            <input id="triPoint2Y" type="text" value="-1">
+            <label>Z</label>
+            <input id="triPoint2Z" type="text" value="-5">
+         </fieldset>
+         <fieldset>
+            <legend>Point 3</legend>
+            <label>X</label>
+            <input id="triPoint3X" type="text" value="0">
+            <label>Y</label>
+            <input id="triPoint3Y" type="text" value="1">
+            <label>Z</label>
+            <input id="triPoint3Z" type="text" value="-5">
+         </fieldset>
+         <button id="tri">Triangle</button>
+      </fieldset>
       <script>
          app.init();
          app.main();
