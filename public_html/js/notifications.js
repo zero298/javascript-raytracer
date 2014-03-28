@@ -51,8 +51,19 @@ var notifications = (function() {
     * @returns {Notification} The created notification
     */
    exports.notify = function(options) {
-      var notification;
-      if (exports.checkPermission() === PERMISSION_GRANTED) {
+      var permission = exports.checkPermission(),
+              notification;
+
+      // TODO: Figure out how to delay notification until user grants permission
+
+      // If we don't have permission, ask for it
+      if (permission === PERMISSION_DEFAULT) {
+         exports.getPermission();
+         permission = exports.checkPermission();
+      }
+
+      // If we do, start a notification
+      if (permission === PERMISSION_GRANTED) {
          if (window.Notification) {
             notification = new window.Notification(
                     options.title || "",
@@ -63,7 +74,6 @@ var notifications = (function() {
                     });
             if (options.duration) {
                setTimeout(function() {
-                  console.log("Should close");
                   notification.close();
                }, options.duration);
             }
@@ -75,12 +85,15 @@ var notifications = (function() {
             notification.show();
             if (options.duration) {
                setTimeout(function() {
-                  console.log("Should close");
                   notification.close();
                }, options.duration);
             }
          }
          return notification;
+      }
+      // If we don't have permission, let the user know that this doesn't work without it
+      else {
+         console.log("Notification can't work without permission");
       }
    };
 

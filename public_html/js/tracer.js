@@ -8,42 +8,7 @@ importScripts("math.js");
 var tracer = (function() {
    var exports = {};
 
-   var tris = [];
-
-   /**
-    * Collide a Ray against a Triangle
-    * @param {app.Ray} ray
-    * @param {app.Triangle} tri
-    * @returns {Boolean} Whether there was an intersection
-    */
-   function intersect(ray, tri) {
-
-      var vec01 = math.subtract(tri.a, tri.b);
-      var vec12 = math.subtract(tri.b, tri.c);
-
-      var cross = math.normalize(math.cross(ray.dir, vec12));
-      var crossDot = math.dot(vec01, cross);
-
-      // Can't be parallel
-      if (crossDot > -0.0001 && crossDot < 0.00001) {
-         return false;
-      }
-
-      var f = 1 / crossDot;
-      var vecPosToPoint = math.subtract(ray.o, tri.a);
-      var u = f * math.dot(vecPosToPoint, cross);
-
-      if (u < 0.0 || u > 1.0) {
-         return false;
-      }
-
-      var q = math.cross(vecPosToPoint, vec01);
-      var v = f * math.dot(ray.dir, q);
-
-      // TODO: Finish intersect function
-
-      return false;
-   }
+   var shapes = [];
 
    /**
     * Cast a Ray against triangles
@@ -51,8 +16,8 @@ var tracer = (function() {
     * @returns {Boolean} Whether there was a collision
     */
    exports.castRay = function(ray) {
-      for (var i = 0; i < tris.length; i++) {
-         if (intersect(ray, tris[i])) {
+      for (var i = 0; i < shapes.length; i++) {
+         if (math.intersect(ray, shapes[i])) {
             return true;
          }
       }
@@ -61,47 +26,83 @@ var tracer = (function() {
 
    /**
     * Add a Triangle to the list of tris to collide against
-    * @param {Triangle} tri
-    * @returns {undefined}
+    * @param {Object} tri
     */
-   exports.addTri = function(tri) {
-      tris.push(tri);
+   exports.addShape = function(tri) {
+      shapes.push(tri);
    };
 
    return exports;
 }());
 
+/**
+ * Handle incoming messages
+ * @param {type} e
+ * @returns {undefined}
+ */
 self.onmessage = function(e) {
-   if (e.data.type) {
+   if (e.data.type && e.data.data) {
+      var data;
       switch (e.data.type) {
-         // TODO: Reinstanciate objects with proper type when sent from parent to worker
+         // TODO: See if there is a better way to reinstanciate objects when sent to worker
          case "ray":
-            if (tracer.castRay(JSON.parse(e.data.data))) {
+            // Get data
+            data = JSON.parse(e.data.data);
+
+            // Make a Ray
+            var ray = new math.Ray(
+                    new math.Vect(data.o.x, data.o.y, data.o.z),
+                    new math.Vect(data.dir.x, data.dir.y, data.dir.z));
+
+            // Cast the Ray
+            if (tracer.castRay(ray)) {
                self.postMessage({
-                  type: "info",
+                  type: "Notification",
                   message: "There was a collision"
                });
             }
             else {
                self.postMessage({
-                  type: "info",
+                  type: "Notification",
                   message: "There was NO collision"
                });
             }
             break;
          case "tri":
-            tracer.addTri(JSON.parse(e.data.data));
+            // Get data
+            data = JSON.parse(e.data.data);
+
+            // Make a tri
+            var tri = new math.Triangle(
+                    new math.Vect(data.a.x, data.a.y, data.a.z),
+                    new math.Vect(data.b.x, data.b.y, data.b.z),
+                    new math.Vect(data.c.x, data.c.y, data.c.z));
+
+            // Add the Triangle to collidable shapes
+            tracer.addShape(tri);
+            break;
+         case "sphere":
+            // Get data
+            data = JSON.parse(e.data.data);
+
+            // Make a Sphere
+            var sphere = new math.Sphere(
+                    new math.Vect(data.c.x, data.c.y, data.c.z),
+                    new math.Vect(data.r.x, data.r.y, data.r.z));
+
+            // Add the Sphere to the collidable shapes
+            tracer.addShape(sphere);
             break;
          default :
             self.postMessage({
-               type: "info",
+               type: "Error",
                message: "Not sure what you want"
             });
       }
    }
    else {
       self.postMessage({
-         type: "info",
+         type: "Error",
          message: "Must supply a type"
       });
    }

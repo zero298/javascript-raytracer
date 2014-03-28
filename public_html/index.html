@@ -29,11 +29,10 @@
             <label for="rayDirectionY">Direction Y</label>
             <input id="rayDirectionY" type="text" value="0">
             <label for="rayDirectionZ">Direction Z</label>
-            <input id="rayDirectionZ" type="text" value="1">
+            <input id="rayDirectionZ" type="text" value="-1">
          </fieldset>
          <button id="trace">Trace</button>
       </fieldset>
-
       <fieldset>
          <legend>Create Triangle</legend>
          <fieldset>
@@ -43,7 +42,7 @@
             <label>Y</label>
             <input id="triPoint1Y" type="text" value="-1">
             <label>Z</label>
-            <input id="triPoint1Z" type="text" value="-5">
+            <input id="triPoint1Z" type="text" value="-0.5">
          </fieldset>
          <fieldset>
             <legend>Point 2</legend>
@@ -52,7 +51,7 @@
             <label>Y</label>
             <input id="triPoint2Y" type="text" value="-1">
             <label>Z</label>
-            <input id="triPoint2Z" type="text" value="-5">
+            <input id="triPoint2Z" type="text" value="-0.5">
          </fieldset>
          <fieldset>
             <legend>Point 3</legend>
@@ -61,9 +60,27 @@
             <label>Y</label>
             <input id="triPoint3Y" type="text" value="1">
             <label>Z</label>
-            <input id="triPoint3Z" type="text" value="-5">
+            <input id="triPoint3Z" type="text" value="-0.5">
          </fieldset>
          <button id="tri">Triangle</button>
+      </fieldset>
+      <fieldset>
+         <legend>Create Sphere</legend>
+         <fieldset>
+            <legend>Center</legend>
+            <label>X</label>
+            <input id="sphereCenterX" type="text" value="0">
+            <label>Y</label>
+            <input id="sphereCenterY" type="text" value="0">
+            <label>Z</label>
+            <input id="sphereCenterZ" type="text" value="0">
+         </fieldset>
+         <fieldset>
+            <legend>Radius</legend>
+            <label>Radius</label>
+            <input id="sphereRadius" type="text" value="1">
+         </fieldset>
+         <button id="sphere">Sphere</button>
       </fieldset>
       <script>
          app.init();
