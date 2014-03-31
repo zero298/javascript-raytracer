@@ -50,12 +50,21 @@ var math = (function() {
    /**
     * Creates a Sphere
     * @class Sphere
+    * @constructor
+    * @property {Vect} c The center of the circle
+    * @property {Number} r The radius of the circle
     * @param {Vect} c
     * @param {Number} r
     * @returns {Sphere}
     */
    exports.Sphere = function(c, r) {
+      /**
+       * @type {Vect} The center of the circle
+       */
       this.c = c || new exports.Vect();
+      /**
+       * @type {Number} The radius of the circle
+       */
       this.r = r || 0;
    };
 
@@ -115,6 +124,43 @@ var math = (function() {
    };
 
    /**
+    * Find the projection of one vector onto another
+    * @param {Vect} v1
+    * @param {Vect} v2
+    * @returns {Vect}
+    */
+   exports.projection = function(v1, v2) {
+      var v2Mag = exports.magnitude(v2);
+      return exports.scale(v2, (exports.dot(v1, v2) / (v2Mag * v2Mag)));
+   };
+
+   /**
+    * Scale a Vect by a scalar
+    * @param {Vect} v0
+    * @param {Number} s
+    * @returns {Vect}
+    */
+   exports.scale = function(v0, s) {
+      return new exports.Vect(
+              v0.x * s,
+              v0.y * s,
+              v0.z * s);
+   };
+
+   /**
+    * Add one Vect to another
+    * @param {Vect} v0
+    * @param {Vect} v1
+    * @returns {Vect}
+    */
+   exports.add = function(v0, v1) {
+      return new exports.Vect(
+              v0.x + v1.x,
+              v0.y + v1.y,
+              v0.z + v1.z);
+   };
+
+   /**
     * Return the difference between two vects
     * @param {Vect} v0
     * @param {Vect} v1
@@ -125,6 +171,32 @@ var math = (function() {
               v0.x - v1.x,
               v0.y - v1.y,
               v0.z - v1.z);
+   };
+
+   /**
+    * Multiply one vect by another
+    * @param {Vect} v0
+    * @param {Vect} v1
+    * @returns {Vect}
+    */
+   exports.multiply = function(v0, v1) {
+      return new exports.Vect(
+              v0.x * v1.x,
+              v0.y * v1.y,
+              v0.z * v1.z);
+   };
+
+   /**
+    * Divide a Vect by another
+    * @param {Vect} v0
+    * @param {Vect} v1
+    * @returns {Vect}
+    */
+   exports.divide = function(v0, v1) {
+      return new exports.Vect(
+              v0.x / v1.x,
+              v0.y / v1.y,
+              v0.z / v1.z);
    };
 
    /**
@@ -178,6 +250,42 @@ var math = (function() {
     */
    exports.intersectRaySphere = function(ray, sphere) {
       // TODO: Impliment ray sphere collision
+
+      var vpc = math.subtract(sphere.c, ray.o);
+
+      if (math.dot(vpc, ray.dir) < 0) {
+         if (math.magnitude(vpc) > sphere.r) {
+            return false;
+         }
+         else if (math.magnitude(vpc) === sphere.r) {
+            return true;
+            // Intersection = p
+         }
+         else {
+            // Ray starts inside the sphere
+         }
+      }
+      else {
+         // Project center of sphere onto the ray
+         var pc = math.projection(sphere.c, ray.dir);
+
+         if (math.magnitude(math.subtract(sphere.c, pc) > sphere.r)) {
+            return false;
+         }
+         else {
+            var tmp = math.magnitude(math.subtract(pc, sphere.c));
+            var dist = Math.sqrt((sphere.r * sphere.r) - (tmp * tmp));
+            var di1;
+            if (math.magnitude(vpc) > sphere.r) {
+               di1 = math.magnitude(math.subtract(math.subtract(pc, ray.o), dist));
+            }
+            else {
+               di1 = math.magnitude(math.add(math.subtract(pc, ray.o), dist));
+            }
+            return true;
+         }
+      }
+
       return false;
    };
 
