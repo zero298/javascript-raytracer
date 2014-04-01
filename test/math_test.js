@@ -31,23 +31,64 @@ MathTest.prototype.testProjection = function() {
 };
 
 MathTest.prototype.testRaySphereIntersection = function() {
+   // Test Ray
    var ray = new math.Ray(
            new math.Vect(0, 0, 0),
            new math.Vect(0, 0, -1));
 
-   var goodSphere = new math.Sphere(
-           new math.Vect(0, 0, -5),
-           1);
+   // Sphere is in front of the ray
+   assertEqualsDelta("Ray must intersect at point",
+           // Expected intersection
+           new math.Vect(0, 0, -4),
+           ray.getPoint(
+                   math.intersectRaySphere(
+                           // Ray starting at origin
+                           ray,
+                           // Sphere in front of ray
+                           new math.Sphere(
+                                   new math.Vect(0, 0, -5),
+                                   1))),
+           // Tolerance
+           math.getTolerance());
 
-   var badSphere = new math.Sphere(
-           new math.Vect(0, 5, -5),
-           0.5);
+   // Sphere encloses ray
+   assertEqualsDelta("Ray must intersect at point",
+           // Expected intersection
+           new math.Vect(0, 0, -1),
+           ray.getPoint(
+                   math.intersectRaySphere(
+                           // Ray starting at origin
+                           ray,
+                           // Sphere at origin
+                           new math.Sphere(
+                                   new math.Vect(0, 0, 0),
+                                   1))),
+           // Tolerance
+           math.getTolerance());
 
-   assertTrue("Ray should intersect with good sphere",
-           math.intersectRaySphere(ray, goodSphere));
+   // Edge of sphere is right at ray origin
+   assertEqualsDelta("Ray must intersect at point",
+           // Expected intersection
+           new math.Vect(0, 0, 0),
+           ray.getPoint(
+                   math.intersectRaySphere(
+                           // Ray starting at origin
+                           ray,
+                           // Sphere in front of ray
+                           new math.Sphere(
+                                   new math.Vect(0, 0, 1),
+                                   1))),
+           // Tolerance
+           math.getTolerance());
 
-   assertFalse("Ray should NOT intersect with bad sphere",
-           math.intersectRaySphere(ray, badSphere));
+   // No intersection
+   assertEquals("Ray should not intersect with sphere",
+           math.getNoIntersection(),
+           math.intersectRaySphere(
+                   ray,
+                   new math.Sphere(
+                           new math.Vect(0, 5, -5),
+                           0.5)));
 };
 
 MathTest.prototype.testRayTriangleIntersection = function() {
@@ -55,11 +96,25 @@ MathTest.prototype.testRayTriangleIntersection = function() {
            new math.Vect(0, 0, 0),
            new math.Vect(0, 0, -1));
 
-   var tri = new math.Triangle(
-           new math.Vect(-1, -1, -5),
-           new math.Vect(1, -1, -5),
-           new math.Vect(0, 1, -5));
+   // Ray should intersect triangle in front
+   assertEqualsDelta("Ray must intersect at point",
+           new math.Vect(0, 0, -5),
+           ray.getPoint(
+                   math.intersectRayTri(
+                           ray,
+                           new math.Triangle(
+                                   new math.Vect(-1, -1, -5),
+                                   new math.Vect(1, -1, -5),
+                                   new math.Vect(0, 1, -5)))),
+           math.getTolerance());
 
-   assertTrue("Ray should intersect with triangle",
-           math.intersectRayTri(ray, tri));
+   // Ray should not intersect
+   assertEquals("Ray must NOT intersect at point",
+           math.getNoIntersection(),
+           math.intersectRayTri(
+                   ray,
+                   new math.Triangle(
+                           new math.Vect(-1, -1, 5),
+                           new math.Vect(1, -1, 5),
+                           new math.Vect(0, 1, 5))));
 };

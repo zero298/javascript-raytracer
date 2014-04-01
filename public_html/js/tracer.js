@@ -16,12 +16,12 @@ var tracer = (function() {
     * @returns {Boolean} Whether there was a collision
     */
    exports.castRay = function(ray) {
+      var nearest = Number.MAX_VALUE;
       for (var i = 0; i < shapes.length; i++) {
-         if (math.intersect(ray, shapes[i])) {
-            return true;
-         }
+         var result = math.intersect(ray, shapes[i]);
+         nearest = (result < nearest ? result : nearest);
       }
-      return false;
+      return nearest;
    };
 
    /**
@@ -55,10 +55,12 @@ self.onmessage = function(e) {
                     new math.Vect(data.dir.x, data.dir.y, data.dir.z));
 
             // Cast the Ray
-            if (tracer.castRay(ray)) {
+            var intersectionTest = tracer.castRay(ray);
+
+            if (intersectionTest !== math.getNoIntersection()) {
                self.postMessage({
                   type: "Notification",
-                  message: "There was a collision"
+                  message: "There was a collision at: " + ray.getPoint(intersectionTest).toString()
                });
             }
             else {
@@ -88,7 +90,7 @@ self.onmessage = function(e) {
             // Make a Sphere
             var sphere = new math.Sphere(
                     new math.Vect(data.c.x, data.c.y, data.c.z),
-                    new math.Vect(data.r.x, data.r.y, data.r.z));
+                    data.r);
 
             // Add the Sphere to the collidable shapes
             tracer.addShape(sphere);
