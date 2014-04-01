@@ -3,15 +3,37 @@
  * @namespace notifications
  */
 var notifications = (function() {
-   var exports = {};
-
-   var PERMISSION_DEFAULT = "default",
+   var
+           exports = {},
+           PERMISSION_DEFAULT = "default",
            PERMISSION_GRANTED = "granted",
            PERMISSION_DENIED = "denied",
            PERMISSION = [
               PERMISSION_GRANTED,
               PERMISSION_DEFAULT,
-              PERMISSION_DENIED];
+              PERMISSION_DENIED],
+           /**
+            * Where to display notifications in case HTML5 notifications aren't supported
+            * @type type
+            */
+           notificationFallbackFunction,
+           showNotifyFallback = false;
+
+   /**
+    * Set what function to call in case HTML5 notifications aren't supported
+    * @param {Function} func The function to call and pass notification options
+    */
+   exports.setFallbackFunction = function(func) {
+      notificationFallbackFunction = func;
+   };
+
+   /**
+    * Whether or not to show the fallback regardless of HTML5 notification API
+    * @param {Boolean} show Whether to show the fallback
+    */
+   exports.setShowNotifyFallback = function(show) {
+      showNotifyFallback = show;
+   };
 
    /**
     * Get permission to show browser notifications
@@ -91,9 +113,16 @@ var notifications = (function() {
          }
          return notification;
       }
+      
       // If we don't have permission, let the user know that this doesn't work without it
       else {
-         console.log("Notification can't work without permission");
+         console.log("Need permission or fallback");
+         exports.setShowNotifyFallback(true);
+      }
+
+      // If we don't have permission, let the user know that this doesn't work without it
+      if (notificationFallbackFunction && showNotifyFallback) {
+         notificationFallbackFunction(options);
       }
    };
 

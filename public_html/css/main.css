@@ -44,3 +44,36 @@ button{
 input{
    display: block;
 }
+
+#notificationBar{
+   position: fixed;
+   top: 100px;
+   right: 100px;
+   background-color: #cccccc;
+   padding: 1em;
+}
+
+#notificationBar h1{
+   padding: 0.5em;
+}
+
+#notificationSection{
+   background-color: lightblue;
+   padding: 1em;
+}
+
+.domNotification{
+   border-style: dashed;
+   padding: 0.5em;
+   margin: 0.5em;
+}
+
+.domNotification h1{
+   font-weight: bold;
+   font-size: 1em;
+}
+
+.domNotification section{
+   font-weight: normal;
+   font-size: 1em;
+}

@@ -1,8 +1,14 @@
+/**
+ * Namespace for the ray tracing app
+ * @namespace app
+ */
 var app = (function() {
    var exports = {};
 
+   // Create the ray tracer worker thread
    var traceWorker = new Worker("js/tracer.js");
 
+   // Do notifications whenever we hear back from worker
    traceWorker.onmessage = function(e) {
       notifications.notify({
          title: e.data.type,
@@ -11,13 +17,74 @@ var app = (function() {
       });
       console.log(e.data.message);
    };
+
+   /**
+    * Fallback function in case HTML5 notifications aren't supported
+    * @param {type} options
+    * @config {String} title The title of the notification
+    * @config {String} icon The location of the icon to use
+    * @config {String} body The body of the notification
+    * @config {String} tag The tag of the notification
+    * @config {Number} duration How long the message will stay up
+    */
+   function notificationFallback(options) {
+      var notificationFallbackSection = document.getElementById("notificationSection"),
+              domNotification = document.createElement("div"),
+              domNotificationTitle = document.createElement("h1"),
+              domNotificationBody = document.createElement("p");
+
+      // Set classes
+      domNotification.className = "domNotification";
+      domNotificationTitle.className = "domNotificationTitle";
+      domNotificationBody.className = "domNotificationBody";
+
+      // Set content
+      domNotificationTitle.innerHTML = options.title || "";
+      domNotificationBody.innerHTML = options.body || "";
+
+      // Append to notification
+      domNotification.appendChild(domNotificationTitle);
+      domNotification.appendChild(domNotificationBody);
+
+      // Append to DOM
+      notificationFallbackSection.appendChild(domNotification);
+
+      // If we have a duration, remove the notification after a while
+      if (options.duration) {
+         setTimeout(function() {
+            notificationFallbackSection.removeChild(domNotification);
+         }, options.duration);
+      }
+   }
+
+   /**
+    * Function to clear the notifications
+    */
+   function clearNotifications() {
+      var notificationFallbackSection = document.getElementById("notificationSection");
+      notificationFallbackSection.innerHTML = "";
+   }
+
+   /**
+    * Initialize the app
+    */
    exports.init = function() {
+      notifications.setFallbackFunction(notificationFallback);
+      document.getElementById("clearNotifications").addEventListener("click", clearNotifications);
       document.getElementById("trace").addEventListener("click", exports.createRay);
       document.getElementById("tri").addEventListener("click", exports.createTri);
       document.getElementById("sphere").addEventListener("click", exports.createSphere);
    };
+
+   /**
+    * Entry point of app
+    */
    exports.main = function() {
    };
+
+   /**
+    * Create a Ray from the dom inputs and send it to the worker
+    */
    exports.createRay = function() {
       var ray = new math.Ray(
               new math.Vect(
@@ -33,6 +100,10 @@ var app = (function() {
          data: JSON.stringify(ray)
       });
    };
+
+   /**
+    * Create a triangle from the dom inputs and send it to the worker
+    */
    exports.createTri = function() {
       var tri = new math.Triangle(
               new math.Vect(
@@ -52,6 +123,10 @@ var app = (function() {
          data: JSON.stringify(tri)
       });
    };
+
+   /**
+    * Create a sphere from the dom inputs and send it to the worker
+    */
    exports.createSphere = function() {
       var sphere = new math.Sphere(
               new math.Vect(
