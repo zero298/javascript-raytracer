@@ -1,3 +1,10 @@
+/**
+ * @fileOverview This file holds the {@link tracer} namespace and impliments the 
+ * actual ray tracing functionality, it should be called as a worker 
+ * thread from {@link app}
+ * @name Tracer
+ */
+
 // Load our math library
 importScripts("math.js");
 

@@ -1,4 +1,11 @@
 /**
+ * @fileOverview This is the file that holds the {@link notifications} namespace 
+ * which wraps the HTML5 notificaiton API into a cross browser friendly interface 
+ * and provides a mechanism to fallback in case it is unsupported
+ * @name Notifications Library
+ */
+
+/**
  * Wrapper for the HTML5 Notifications API
  * @namespace notifications
  */
@@ -64,12 +71,12 @@ var notifications = (function() {
 
    /**
     * Show a notification
-    * @param {object} options
-    * @config {String} title The title of the notification
-    * @config {String} icon The location of the icon to use
-    * @config {String} body The body of the notification
-    * @config {String} tag The tag of the notification
-    * @config {Number} duration How long the message will stay up
+    * @param {Object} options
+    * @param {String} options.title The title of the notification
+    * @param {String} options.icon The location of the icon to use
+    * @param {String} options.body The body of the notification
+    * @param {String} options.tag The tag of the notification
+    * @param {Number} options.duration How long the message will stay up
     * @returns {Notification} The created notification
     */
    exports.notify = function(options) {
@@ -113,7 +120,7 @@ var notifications = (function() {
          }
          return notification;
       }
-      
+
       // If we don't have permission, let the user know that this doesn't work without it
       else {
          console.log("Need permission or fallback");

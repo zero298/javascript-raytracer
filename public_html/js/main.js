@@ -1,4 +1,11 @@
 /**
+ * @fileOverview This file is the main file that holds the {@link app} namespace 
+ * which implements application specific functions such as application 
+ * initialization and input field value extraction
+ * @name Main
+ */
+
+/**
  * Namespace for the ray tracing app
  * @namespace app
  */
@@ -20,12 +27,12 @@ var app = (function() {
 
    /**
     * Fallback function in case HTML5 notifications aren't supported
-    * @param {type} options
-    * @config {String} title The title of the notification
-    * @config {String} icon The location of the icon to use
-    * @config {String} body The body of the notification
-    * @config {String} tag The tag of the notification
-    * @config {Number} duration How long the message will stay up
+    * @param {Object} options
+    * @param {String} options.title The title of the notification
+    * @param {String} options.icon The location of the icon to use
+    * @param {String} options.body The body of the notification
+    * @param {String} options.tag The tag of the notification
+    * @param {Number} options.duration How long the message will stay up
     */
    function notificationFallback(options) {
       var notificationFallbackSection = document.getElementById("notificationSection"),
@@ -59,6 +66,7 @@ var app = (function() {
 
    /**
     * Function to clear the notifications
+    * @function
     */
    function clearNotifications() {
       var notificationFallbackSection = document.getElementById("notificationSection");
@@ -67,6 +75,7 @@ var app = (function() {
 
    /**
     * Initialize the app
+    * @function
     */
    exports.init = function() {
       notifications.setFallbackFunction(notificationFallback);
@@ -78,12 +87,14 @@ var app = (function() {
 
    /**
     * Entry point of app
+    * @function
     */
    exports.main = function() {
    };
 
    /**
     * Create a Ray from the dom inputs and send it to the worker
+    * @function
     */
    exports.createRay = function() {
       var ray = new math.Ray(
@@ -103,6 +114,7 @@ var app = (function() {
 
    /**
     * Create a triangle from the dom inputs and send it to the worker
+    * @function
     */
    exports.createTri = function() {
       var tri = new math.Triangle(
@@ -126,6 +138,7 @@ var app = (function() {
 
    /**
     * Create a sphere from the dom inputs and send it to the worker
+    * @function
     */
    exports.createSphere = function() {
       var sphere = new math.Sphere(
