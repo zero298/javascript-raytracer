@@ -1,0 +1,1 @@
+jsdox --output ..\doc ..\public_html\js
