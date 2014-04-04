@@ -65,9 +65,10 @@ var math = (function() {
       this.z = z || 0;
       this.w = w || 0;
    };
+
    /**
     * Converts this object to string format
-    * @returns {String}
+    * @returns {String} The string representation of the Vect
     */
    exports.Vect.prototype.toString = function() {
       return "{x: " + this.x + " y: " + this.y + " z: " + this.z + " w: " + this.w + "}";
@@ -83,6 +84,14 @@ var math = (function() {
    exports.Ray = function(o, dir) {
       this.o = o || new math.Vect();
       this.dir = dir || new math.Vect();
+   };
+
+   /**
+    * Convert Ray to string
+    * @returns {String} The string representation of the Ray
+    */
+   exports.Ray.prototype.toString = function() {
+      return "{Origin: " + this.o.toString() + ", Direction: " + this.dir.toString() + "}";
    };
 
    /**
@@ -109,6 +118,14 @@ var math = (function() {
    };
 
    /**
+    * Get the string representation of this Triangle
+    * @returns {String} The string representation of this Triangle
+    */
+   exports.Triangle.prototype.toString = function() {
+      return "{A: " + this.a + ", B: " + this.b + ", C: " + this.c + "}";
+   };
+
+   /**
     * Creates a Sphere
     * @constructor
     * @classdesc A three dimensional sphere in space represented by a point and a radius
@@ -126,6 +143,14 @@ var math = (function() {
        * @type {Number}
        */
       this.r = r || 0;
+   };
+
+   /**
+    * Get the string representation of this sphere
+    * @returns {String} String representation of the Sphere
+    */
+   exports.Sphere.prototype.toString = function() {
+      return "{Origin: " + this.c + ", Radius: " + this.r + "}";
    };
 
    /**
