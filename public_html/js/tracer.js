@@ -39,6 +39,49 @@ var tracer = (function() {
       shapes.push(tri);
    };
 
+   /**
+    * Trace for objects through the viewport
+    * @param {Viewport} viewport The viewport to trace through
+    * @returns {Uint8ClampedArray}
+    */
+   exports.trace = function(viewport) {
+      var
+              // Create bitmap array
+              arr = new Uint8ClampedArray(viewport.width * viewport.height * 4),
+              // Compute viewport dimensions
+              halfX = viewport.right * 0.5,
+              halfY = viewport.top * 0.5,
+              // Compute FOV
+              fovX = math.degToRad(viewport.fov),
+              fovY = ((viewport.height / viewport.width) * fovX),
+              // Precompute x and y increment
+              xInc = ((1 / viewport.width) * Math.tan(fovX)),
+              yInc = ((1 / viewport.height) * Math.tan(fovY));
+
+      // Iterate over each pixel in viewport and cast a ray through it
+      for (var j = 0; j < viewport.height; j++) {
+         for (var i = 0; i < viewport.width; i++) {
+
+            // Get world position of pixel
+            var x = (-halfX + (i * xInc));
+            var y = (halfY - (j * yInc));
+
+            // Create a ray to cast
+            var ray = new math.Ray(new math.Vect(), new math.Vect(x, y, -1));
+
+            // If we intersect, change that pixel's color
+            var index = ((i + j * viewport.width) * 4);
+            if (tracer.castRay(ray) !== math.NO_INTERSECTION) {
+               arr[index + 0] = 255;
+               arr[index + 1] = 0;
+               arr[index + 2] = 0;
+               arr[index + 3] = 255;
+            }
+         }
+      }
+      return arr;
+   };
+
    return exports;
 }());
 
@@ -52,6 +95,22 @@ self.onmessage = function(e) {
       var data;
       switch (e.data.type) {
          // TODO: See if there is a better way to reinstanciate objects when sent to worker
+         case "viewport":
+            // Get data
+            data = JSON.parse(e.data.data);
+
+            // Reconstruct viewport
+            var viewport = new math.Viewport(
+                    data.width, data.height,
+                    data.top, data.bottom, data.left, data.right,
+                    data.near, data.far, data.fov);
+
+            // Send back results
+            self.postMessage({
+               type: "result",
+               data: tracer.trace(viewport)
+            });
+            break;
          case "ray":
             // Get data
             data = JSON.parse(e.data.data);

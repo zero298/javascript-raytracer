@@ -154,6 +154,45 @@ var math = (function() {
    };
 
    /**
+    * A record of a collision between objects
+    * @constructor
+    * @classdesc A record of a collision between two objects
+    * @param {Vect} point The position at which the collision occured
+    * @param {Vect} normal The collision normal
+    */
+   exports.CollisionRecord = function(point, normal) {
+      this.point = point || new math.Vect();
+      this.normal = normal || new math.Vect();
+   };
+
+   /**
+    * Viewport constructor
+    * @constructor
+    * @classdesc A viewport to cast rays through
+    * @param {type} width
+    * @param {type} height
+    * @param {type} top
+    * @param {type} bottom
+    * @param {type} left
+    * @param {type} right
+    * @param {type} near
+    * @param {type} far
+    * @param {type} fov
+    * @returns {undefined}
+    */
+   exports.Viewport = function(width, height, top, bottom, left, right, near, far, fov) {
+      this.width = width || 128;
+      this.height = height || 128;
+      this.top = top || 1;
+      this.bottom = bottom || -1;
+      this.left = left || -1;
+      this.right = right || 1;
+      this.near = near || 0.1;
+      this.far = far || 100;
+      this.fov = fov || 45;
+   };
+
+   /**
     * Get cross product of two vectors
     * @param {Vect} v0 The first vector of the cross operation
     * @param {Vect} v1 the second vector of the cross operation
@@ -305,6 +344,25 @@ var math = (function() {
     */
    exports.equalityNumber = function(n0, n1) {
       return (Math.abs(n0 - n1) < math.tolerance);
+   };
+
+
+   /**
+    * Convert degrees to radians
+    * @param {Number} degrees Degrees to convert
+    * @returns {Number} Radians conversion
+    */
+   exports.degToRad = function(degrees) {
+      return ((degrees * Math.PI) / 180.0);
+   };
+
+   /**
+    * Convert radians to degress
+    * @param {Number} radians Radians to convert
+    * @returns {Number} Degrees conversion
+    */
+   exports.radToDeg = function(radians) {
+      return ((radians * 180.0) / Math.PI);
    };
 
    /**

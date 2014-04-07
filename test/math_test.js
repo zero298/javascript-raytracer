@@ -1,5 +1,6 @@
 MathTest = TestCase("MathTest");
 
+// Test equality of two vectors with tolerance
 MathTest.prototype.testEquality = function() {
    var vect1 = new math.Vect(1, 2, 3);
    var vect2 = new math.Vect(1, 2, 3);
@@ -8,6 +9,7 @@ MathTest.prototype.testEquality = function() {
            vect1, vect2, math.getTolerance());
 };
 
+// Test addition of vectors
 MathTest.prototype.testAddition = function() {
    var vectAddend1 = new math.Vect(1, 2, 3);
    var vectAddend2 = new math.Vect(4, 5, 6);
@@ -19,6 +21,7 @@ MathTest.prototype.testAddition = function() {
            vectExpectedSum, vectActualSum, math.getTolerance());
 };
 
+// Test projection of vectors onto one another
 MathTest.prototype.testProjection = function() {
    var vect1 = new math.Vect(2, 4, 6);
    var vect2 = new math.Vect(4, 5, 6);
@@ -30,6 +33,7 @@ MathTest.prototype.testProjection = function() {
            vectExpectedProjection, vectActualProjection, math.getTolerance());
 };
 
+// Test intersection of ray and sphere
 MathTest.prototype.testRaySphereIntersection = function() {
    // Test Ray
    var ray = new math.Ray(
@@ -91,6 +95,7 @@ MathTest.prototype.testRaySphereIntersection = function() {
                            0.5)));
 };
 
+// Test intersection of ray and triangle
 MathTest.prototype.testRayTriangleIntersection = function() {
    var ray = new math.Ray(
            new math.Vect(0, 0, 0),

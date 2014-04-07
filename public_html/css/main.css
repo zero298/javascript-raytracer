@@ -46,9 +46,7 @@ input{
 }
 
 #notificationBar{
-   position: fixed;
-   top: 100px;
-   right: 100px;
+   display: inline-block;
    background-color: #cccccc;
    padding: 1em;
 }
@@ -76,4 +74,11 @@ input{
 .domNotification section{
    font-weight: normal;
    font-size: 1em;
+}
+
+#renderSection{
+   padding: 1em;
+   display: inline-block;
+   width: auto;
+   background-color: #cccccc;
 }
