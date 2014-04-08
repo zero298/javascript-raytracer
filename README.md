@@ -1,5 +1,7 @@
 **JavaScript Raytracer**
 
+*Developed in Netbeans 8.0*
+
 The documentation for this application is located in a submodule so if you want 
 to also pull that, make sure that you navigate to the root of the project and do:
 
