@@ -15,6 +15,9 @@ var app = (function() {
    // Create the ray tracer worker thread
    var traceWorker = new Worker("js/tracer.js");
 
+   // Static index of shape
+   var nextShapeNumber = 0;
+
    // Handle messages from the worker
    traceWorker.onmessage = function(e) {
 
@@ -110,6 +113,18 @@ var app = (function() {
       notificationFallbackSection.innerHTML = "";
    }
 
+   function showShape(e) {
+      console.log("Changed");
+   }
+
+   exports.logShape = function(shape) {
+      var list = document.getElementById("shapes");
+      var newOption = document.createElement("option");
+      newOption.id = shape.shapeId;
+      newOption.innerHTML = (shape.constructor.name) + " " + shape.shapeId;
+      list.appendChild(newOption);
+   };
+
    /**
     * Initialize the app
     * @function
@@ -118,9 +133,23 @@ var app = (function() {
       notifications.setFallbackFunction(notificationFallback);
       document.getElementById("clearNotifications").addEventListener("click", clearNotifications);
       document.getElementById("trace").addEventListener("click", exports.createRay);
-      document.getElementById("tri").addEventListener("click", exports.createTri);
-      document.getElementById("sphere").addEventListener("click", exports.createSphere);
+      document.getElementById("tri").addEventListener("click", function() {
+         exports.logShape(exports.createTri());
+      });
+      document.getElementById("sphere").addEventListener("click", function() {
+         exports.logShape(exports.createSphere());
+      });
       document.getElementById("viewport").addEventListener("click", exports.createViewport);
+      document.getElementById("clearShapes").addEventListener("click", exports.clearShapes);
+      document.getElementById("deleteShape").addEventListener("click", function() {
+         var shapeList = document.getElementById("shapes");
+         var selectedShapes = shapeList.selectedOptions;
+
+         for (var i = 0; i < selectedShapes.length; i++) {
+            console.log(selectedShapes[i].label);
+         }
+      });
+      document.getElementById("shapes").addEventListener("change", showShape);
    };
 
    /**
@@ -130,15 +159,34 @@ var app = (function() {
    exports.main = function() {
    };
 
+   /**
+    * Tell worker to clear the shapes to trace
+    * @function
+    */
+   exports.clearShapes = function() {
+      // Clear out the tracked shapes
+      var list = document.getElementById("shapes");
+      while (list.firstChild) {
+         list.removeChild(list.firstChild);
+      }
+      // Tell the tracer to do the same
+      traceWorker.postMessage({
+         type: "clearshapes",
+         data: "all"
+      });
+   };
+
+   /**
+    * Create a viewport to cast rays through
+    * @function
+    */
    exports.createViewport = function() {
       var
               // The canvas to draw on
               traceCanvas = document.getElementById("traceCanvas"),
-              // Get the context of the canvas
-              ctx = traceCanvas.getContext("2d"),
               // The viewport to send
               viewport = new math.Viewport(
-                      ctx.width, ctx.height,
+                      traceCanvas.width, traceCanvas.height,
                       1, -1, -1, 1,
                       0.1, 100, 45);
 
@@ -191,11 +239,14 @@ var app = (function() {
          type: "tri",
          data: JSON.stringify(tri)
       });
+
+      return tri;
    };
 
    /**
     * Create a sphere from the dom inputs and send it to the worker
     * @function
+    * @return {type} description
     */
    exports.createSphere = function() {
       var sphere = new math.Sphere(
@@ -208,6 +259,7 @@ var app = (function() {
          type: "sphere",
          data: JSON.stringify(sphere)
       });
+      return sphere;
    };
 
    exports.startTracer = function() {

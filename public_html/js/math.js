@@ -12,6 +12,8 @@
 var math = (function() {
    var exports = {};
 
+   var nextShapeId = 0;
+
    /**
     * Floating point error allowed
     * @readonly
@@ -59,7 +61,7 @@ var math = (function() {
     * @param {Number} z The z coordinate
     * @param {Number} w The homogeneous component
     */
-   exports.Vect = function(x, y, z, w) {
+   exports.Vect = function Vect(x, y, z, w) {
       this.x = x || 0;
       this.y = y || 0;
       this.z = z || 0;
@@ -81,7 +83,7 @@ var math = (function() {
     * @param {Vect} o Origin of Ray
     * @param {Vect} dir Direction of Ray
     */
-   exports.Ray = function(o, dir) {
+   exports.Ray = function Ray(o, dir) {
       this.o = o || new math.Vect();
       this.dir = dir || new math.Vect();
    };
@@ -103,6 +105,9 @@ var math = (function() {
       return math.add(this.o, math.scale(this.dir, t));
    };
 
+   exports.Shape = function Shape() {
+   };
+
    /**
     * Create a Triangle
     * @constructor
@@ -111,11 +116,31 @@ var math = (function() {
     * @param {Vect} b The second point in the triangle
     * @param {Vect} c The third point in the triangle
     */
-   exports.Triangle = function(a, b, c) {
+   exports.Triangle = function Triangle(a, b, c) {
+      exports.Shape.call();
+      /**
+       * The unique id of the Shape
+       * @type {Number}
+       */
+      this.shapeId = nextShapeId++;
+      /**
+       * The first point in the Triangle
+       * @type {Vect}
+       */
       this.a = a || new math.Vect();
+      /**
+       * The second point in the Triangle
+       * @type {Vect}
+       */
       this.b = b || new math.Vect();
+      /**
+       * The third point in the Triangle
+       * @type {Vect}
+       */
       this.c = c || new math.Vect();
    };
+   exports.Triangle.prototype = new exports.Shape;
+   exports.Triangle.prototype.constructor = exports.Triangle;
 
    /**
     * Get the string representation of this Triangle
@@ -132,18 +157,26 @@ var math = (function() {
     * @param {Vect} c The center of the Sphere
     * @param {Number} r The radius of the Sphere
     */
-   exports.Sphere = function(c, r) {
+   exports.Sphere = function Sphere(c, r) {
+      exports.Shape.call();
+      /**
+       * The unique id of the Shape
+       * @type {Number}
+       */
+      this.shapeId = nextShapeId++;
       /**
        * The center of the Sphere
        * @type {Vect}
        */
-      this.c = c || new math.Vect();
+      this.c = c || new exports.Vect();
       /**
        * The radius of the Sphere
        * @type {Number}
        */
       this.r = r || 0;
    };
+   exports.Sphere.prototype = new exports.Shape();
+   exports.Sphere.prototype.constructor = exports.Sphere;
 
    /**
     * Get the string representation of this sphere
@@ -160,7 +193,7 @@ var math = (function() {
     * @param {Vect} point The position at which the collision occured
     * @param {Vect} normal The collision normal
     */
-   exports.CollisionRecord = function(point, normal) {
+   exports.CollisionRecord = function CollisionRecord(point, normal) {
       this.point = point || new math.Vect();
       this.normal = normal || new math.Vect();
    };
@@ -180,7 +213,7 @@ var math = (function() {
     * @param {type} fov
     * @returns {undefined}
     */
-   exports.Viewport = function(width, height, top, bottom, left, right, near, far, fov) {
+   exports.Viewport = function Viewport(width, height, top, bottom, left, right, near, far, fov) {
       this.width = width || 128;
       this.height = height || 128;
       this.top = top || 1;

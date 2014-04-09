@@ -82,6 +82,10 @@ var tracer = (function() {
       return arr;
    };
 
+   exports.clearShapes = function() {
+      shapes = [];
+   };
+
    return exports;
 }());
 
@@ -109,6 +113,14 @@ self.onmessage = function(e) {
             self.postMessage({
                type: "result",
                data: tracer.trace(viewport)
+            });
+            break;
+         case "clearshapes":
+            // Clear out the shapes to be traced
+            tracer.clearShapes();
+            self.postMessage({
+               type: "Notification",
+               message: "Shapes have been cleared"
             });
             break;
          case "ray":
@@ -146,6 +158,9 @@ self.onmessage = function(e) {
                     new math.Vect(data.b.x, data.b.y, data.b.z),
                     new math.Vect(data.c.x, data.c.y, data.c.z));
 
+            // Set shape ID
+            tri.shapeId = data.shapeId;
+
             // Add the Triangle to collidable shapes
             tracer.addShape(tri);
             break;
@@ -157,6 +172,9 @@ self.onmessage = function(e) {
             var sphere = new math.Sphere(
                     new math.Vect(data.c.x, data.c.y, data.c.z),
                     data.r);
+
+            // Set shape ID
+            sphere.shapeId = data.shapeId;
 
             // Add the Sphere to the collidable shapes
             tracer.addShape(sphere);

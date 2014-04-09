@@ -31,8 +31,8 @@ body{
 }
 
 button{
-   background: white;
-   border: 0px;
+   background: #ccccff;
+   border: 1px solid;
    padding-left: 1em;
    padding-right: 1em;
    padding-top: 0.5em;
@@ -81,4 +81,8 @@ input{
    display: inline-block;
    width: auto;
    background-color: #cccccc;
+}
+
+#shapes{
+   width: 200px;
 }
