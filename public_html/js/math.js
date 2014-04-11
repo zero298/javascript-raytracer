@@ -106,6 +106,10 @@ var math = (function() {
    };
 
    exports.Shape = function Shape() {
+      this.color = new exports.Vect(
+              Math.floor((Math.random() * 255) + 1),
+              Math.floor((Math.random() * 255) + 1),
+              Math.floor((Math.random() * 255) + 1));
    };
 
    /**

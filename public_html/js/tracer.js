@@ -24,19 +24,58 @@ var tracer = (function() {
     */
    exports.castRay = function(ray) {
       var nearest = Number.MAX_VALUE;
+      var s = -1;
       for (var i = 0; i < shapes.length; i++) {
          var result = math.intersect(ray, shapes[i]);
-         nearest = (result < nearest ? result : nearest);
+
+         if (result < nearest) {
+            nearest = result;
+            s = i;
+         }
+
+         //nearest = (result < nearest ? result : nearest);
+
       }
-      return nearest;
+
+      var color = (s > -1 ? shapes[s].color : new math.Vect());
+      return {
+         t: nearest,
+         c: color
+      };
    };
 
    /**
     * Add a Triangle to the list of tris to collide against
-    * @param {Object} tri
+    * @param {Shape} shape
     */
-   exports.addShape = function(tri) {
-      shapes.push(tri);
+   exports.addShape = function(shape) {
+      shapes.push(shape);
+   };
+
+   function randomVect() {
+      return new math.Vect(
+              ((Math.random() * 10) - 5),
+              ((Math.random() * 10) - 5),
+              ((Math.random() * -10) - 10));
+   }
+
+   exports.randomShapes = function(num) {
+      num = num || 100;
+      for (var i = 0; i < num; i++) {
+
+         var tri =
+                 new math.Triangle(
+                         randomVect(),
+                         randomVect(),
+                         randomVect());
+
+         tri.color = new math.Vect(
+                 Math.floor(Math.random() * 255),
+                 Math.floor(Math.random() * 255),
+                 Math.floor(Math.random() * 255));
+
+         tracer.addShape(tri);
+      }
    };
 
    /**
@@ -71,10 +110,16 @@ var tracer = (function() {
 
             // If we intersect, change that pixel's color
             var index = ((i + j * viewport.width) * 4);
-            if (tracer.castRay(ray) !== math.NO_INTERSECTION) {
-               arr[index + 0] = 255;
-               arr[index + 1] = 0;
-               arr[index + 2] = 0;
+
+            var result = tracer.castRay(ray);
+
+//            console.log(result.c.x);
+
+            if (result.t !== math.NO_INTERSECTION) {
+               arr[index + 0] = result.c.x;
+               arr[index + 1] = result.c.y;
+               arr[index + 2] = result.c.z;
+               ;
                arr[index + 3] = 255;
             }
          }
@@ -82,6 +127,10 @@ var tracer = (function() {
       return arr;
    };
 
+   /**
+    * Remove all the shapes from the tracer
+    * @function
+    */
    exports.clearShapes = function() {
       shapes = [];
    };
@@ -99,6 +148,9 @@ self.onmessage = function(e) {
       var data;
       switch (e.data.type) {
          // TODO: See if there is a better way to reinstanciate objects when sent to worker
+         case "random":
+            tracer.randomShapes();
+            break;
          case "viewport":
             // Get data
             data = JSON.parse(e.data.data);
@@ -110,9 +162,13 @@ self.onmessage = function(e) {
                     data.near, data.far, data.fov);
 
             // Send back results
+            console.profile("Tracer Profile");
+            var result = tracer.trace(viewport);
+            console.profileEnd("Tracer Profile");
+
             self.postMessage({
                type: "result",
-               data: tracer.trace(viewport)
+               data: result
             });
             break;
          case "clearshapes":

@@ -140,6 +140,7 @@ var app = (function() {
          exports.logShape(exports.createSphere());
       });
       document.getElementById("viewport").addEventListener("click", exports.createViewport);
+      document.getElementById("random").addEventListener("click", exports.randomShapes);
       document.getElementById("clearShapes").addEventListener("click", exports.clearShapes);
       document.getElementById("deleteShape").addEventListener("click", function() {
          var shapeList = document.getElementById("shapes");
@@ -157,6 +158,13 @@ var app = (function() {
     * @function
     */
    exports.main = function() {
+   };
+
+   exports.randomShapes = function() {
+      traceWorker.postMessage({
+         type: "random",
+         data: "Nothing"
+      });
    };
 
    /**
