@@ -105,11 +105,13 @@ var math = (function() {
       return math.add(this.o, math.scale(this.dir, t));
    };
 
+   /**
+    * Base class for shape primitives
+    * @constructor
+    * @classdesc What all shape primitives extend 
+    * @returns {_L12.Shape}
+    */
    exports.Shape = function Shape() {
-      this.color = new exports.Vect(
-              Math.floor((Math.random() * 255) + 1),
-              Math.floor((Math.random() * 255) + 1),
-              Math.floor((Math.random() * 255) + 1));
    };
 
    /**
@@ -203,7 +205,18 @@ var math = (function() {
     * @returns {Vect}
     */
    exports.Sphere.prototype.getNormal = function(point) {
-      return math.normalize(math.subtract(point, this.c));
+      var n = math.normalize(math.subtract(point, this.c));
+      return n;
+   };
+
+   /**
+    * See if a given point lays on the shell of a sphere
+    * @param {Vect} point The point to check
+    * @returns {Boolean} Whether it is on the edge of the sphere
+    */
+   exports.Sphere.prototype.isPointOnSphere = function(point) {
+      var pointDist = math.subtract(point, this.c);
+      return (math.equalityNumber(this.r, math.magnitude(pointDist)));
    };
 
    /**
@@ -241,7 +254,6 @@ var math = (function() {
     * @param {type} near
     * @param {type} far
     * @param {type} fov
-    * @returns {undefined}
     */
    exports.Viewport = function Viewport(width, height, top, bottom, left, right, near, far, fov) {
       this.width = width || 128;
@@ -253,6 +265,22 @@ var math = (function() {
       this.near = near || 0.1;
       this.far = far || 100;
       this.fov = fov || 45;
+   };
+
+   /**
+    * A Material constructor
+    * @constructor
+    * @classdesc A material to give shapes color
+    * @param {Vect} ambient The ambient component of the Material
+    * @param {Vect} diffuse The diffuse component of the Material
+    * @param {Vect} specular The specular component of the Material
+    * @param {Number} shine The shininess component of the Material
+    */
+   exports.Material = function Material(ambient, diffuse, specular, shine) {
+      this.ambient = ambient || new math.Vect(0.2, 0.2, 0.2);
+      this.diffuse = ambient || new math.Vect(0.7, 0.7, 0.7);
+      this.specular = ambient || new math.Vect(0.8, 0.8, 0.8);
+      this.shine = shine || 16;
    };
 
    /**
@@ -531,7 +559,6 @@ var math = (function() {
             //return t;
             var point = ray.getPoint(t);
             return new math.CollisionRecord(t, point, math.normalize(math.subtract(point, sphere.c)));
-
          }
       }
       // Otherwise the sphere is somewhere in front of the ray
@@ -555,8 +582,6 @@ var math = (function() {
             else {
                t = (math.magnitude(math.subtract(projSphereRay, ray.o)) + distToCollisionPoint);
             }
-            //return math.add(ray.o, math.scale(ray.dir, t));
-            //return t;
             var point = ray.getPoint(t);
             return new math.CollisionRecord(t, point, math.normalize(math.subtract(point, sphere.c)));
          }
@@ -583,6 +608,8 @@ var math = (function() {
          return math.intersectRaySphere(a, b);
       }
    };
+
+
 
    /**
     * Namespace to hold random generation function
@@ -622,6 +649,21 @@ var math = (function() {
                  Math.round((Math.random() * (maxZ - minZ)) + minZ));
       },
       /**
+       * Create a random Material
+       * @returns {Material}
+       */
+      randomMaterial: function() {
+         // Get a base color for the material
+         var baseColor = math.randomizer.randomVectFloat(0, 1, 0, 1, 0, 1);
+
+         // Set the material components
+         return new math.Material(
+                 math.scale(baseColor, 0.5),
+                 math.scale(baseColor, 0.8),
+                 math.scale(baseColor, 1.0),
+                 16);
+      },
+      /**
        * Create a random triangle
        * @returns {Triangle} A randomly generated Triangle
        */
@@ -631,7 +673,8 @@ var math = (function() {
                          math.randomizer.randomVectFloat(-5, 5, -5, 5, -20, -10),
                          math.randomizer.randomVectFloat(-5, 5, -5, 5, -20, -10),
                          math.randomizer.randomVectFloat(-5, 5, -5, 5, -20, -10));
-         tri.color = math.randomizer.randomVectInt(0, 255, 0, 255, 0, 255);
+         // Set a material
+         tri.material = math.randomizer.randomMaterial();
          return tri;
       },
       /**
@@ -643,7 +686,8 @@ var math = (function() {
                  new math.Sphere(
                          math.randomizer.randomVectFloat(-5, 5, -5, 5, -20, -10),
                          (Math.random() * 0.5) + 0.5);
-         sphere.color = math.randomizer.randomVectInt(0, 255, 0, 255, 0, 255);
+         // Set a material
+         sphere.material = math.randomizer.randomMaterial();
          return sphere;
       }
    };

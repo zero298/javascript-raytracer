@@ -20,11 +20,13 @@ var tracer = (function() {
    /**
     * Cast a Ray against triangles
     * @param {Ray} ray The ray to cast with
-    * @returns {Boolean} Whether there was a collision
+    * @returns {RayCastResult} Object containing intersection result
+    * @returns {RayCastResult.t} Point along ray of intersection
+    * @returns {RayCastResult.nearest} Nearest object index
     */
    exports.castRay = function(ray) {
-      var nearest = new math.CollisionRecord(math.getNoIntersection());//Number.MAX_VALUE;
-      var result = new math.CollisionRecord(math.getNoIntersection());
+      var nearest = new math.CollisionRecord(math.getNoIntersection());
+      var result = nearest;
       var nearestShapeIndex = -1;
       for (var i = 0; i < shapes.length; i++) {
          // Get the intersection result
@@ -37,12 +39,9 @@ var tracer = (function() {
          }
       }
 
-      var color = (nearestShapeIndex > -1 ? shapes[nearestShapeIndex].color : new math.Vect());
-
       return {
          t: nearest.t,
-         n: nearest.normal,
-         c: color
+         nearest: nearestShapeIndex
       };
    };
 
@@ -59,7 +58,7 @@ var tracer = (function() {
     * @param {Number} num The number of shapes to add
     */
    exports.randomShapes = function(num) {
-      num = num || 100;
+      num = num || 5;
       var shape;
       for (var i = 0; i < num; i++) {
          switch (Math.ceil(Math.random() * 2)) {
@@ -77,6 +76,20 @@ var tracer = (function() {
          }
          // Add the shape
          tracer.addShape(shape);
+      }
+   };
+
+   /**
+    * A bunch of spheres to show lighting errors
+    */
+   exports.gridSphere = function() {
+      var material = new math.Material();
+      for (var i = -5; i <= 5; i++) {
+         for (var j = -5; j <= 5; j++) {
+            var newSphere = new math.Sphere(new math.Vect(i, j, -10), 0.5);
+            newSphere.material = material;
+            tracer.addShape(newSphere);
+         }
       }
    };
 
@@ -129,23 +142,33 @@ var tracer = (function() {
                var dirToLight = math.normalize(math.subtract(lightPos, intersectionPoint));
 
                // Get a color to work with
-               var color = new math.Vect(result.c.x, result.c.y, result.c.z);
+               var nearestObject = shapes[result.nearest];
+
+               // Get the color of the shape
+               var material = nearestObject.material;
 
                // Get the normal of the intersection
-               var normal = new math.Vect(result.n.x, result.n.y, result.n.z);
+               var normal = nearestObject.getNormal(intersectionPoint);
 
                // Get the normal dot the light direction
                var NdotL = math.dot(normal, dirToLight);
 
                // Scale the color with the NdotL
-               var ambient = math.scale(color, 0.5);
-               var diffuse = math.scale(color, NdotL);
+               var ambient = material.ambient;
+               var diffuse = math.scale(material.diffuse, NdotL);
+
+               // Sum components
                var finalColor = math.add(ambient, diffuse);
 
                // Set the pixel color
-               arr[index + 0] = finalColor.x;
-               arr[index + 1] = finalColor.y;
-               arr[index + 2] = finalColor.z;
+//               arr[index + 0] = Math.round(finalColor.x * 255);
+//               arr[index + 1] = Math.round(finalColor.y * 255);
+//               arr[index + 2] = Math.round(finalColor.z * 255);
+//               arr[index + 3] = 255;
+
+               arr[index + 0] = Math.round(normal.x * 255);
+               arr[index + 1] = Math.round(normal.y * 255);
+               arr[index + 2] = Math.round(normal.z * 255);
                arr[index + 3] = 255;
             }
          }
@@ -175,7 +198,8 @@ self.onmessage = function(e) {
       switch (e.data.type) {
          // TODO: See if there is a better way to reinstanciate objects when sent to worker
          case "random":
-            tracer.randomShapes();
+//            tracer.randomShapes();
+            tracer.gridSphere();
 
             self.postMessage({
                type: "Notification",
@@ -245,6 +269,9 @@ self.onmessage = function(e) {
                     new math.Vect(data.b.x, data.b.y, data.b.z),
                     new math.Vect(data.c.x, data.c.y, data.c.z));
 
+            // Set color
+            tri.material = math.randomizer.randomMaterial();
+
             // Set shape ID
             tri.shapeId = data.shapeId;
 
@@ -259,6 +286,9 @@ self.onmessage = function(e) {
             var sphere = new math.Sphere(
                     new math.Vect(data.c.x, data.c.y, data.c.z),
                     data.r);
+
+            // Set color
+            sphere.material = math.randomizer.randomMaterial();
 
             // Set shape ID
             sphere.shapeId = data.shapeId;
