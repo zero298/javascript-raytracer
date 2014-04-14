@@ -142,9 +142,24 @@ var math = (function() {
        * @type {Vect}
        */
       this.c = c || new math.Vect();
+      /**
+       * The current normal of the Triangle
+       * @type {Vect}
+       */
+      this.normal = math.normalize(math.cross(
+              math.subtract(this.a, this.b),
+              math.subtract(this.a, this.c)));
    };
    exports.Triangle.prototype = new exports.Shape;
    exports.Triangle.prototype.constructor = exports.Triangle;
+
+   /**
+    * Get the normal of the Triangle
+    * @returns {Vect}
+    */
+   exports.Triangle.prototype.getNormal = function() {
+      return this.normal;
+   };
 
    /**
     * Get the string representation of this Triangle
@@ -183,6 +198,15 @@ var math = (function() {
    exports.Sphere.prototype.constructor = exports.Sphere;
 
    /**
+    * Returns the Normal of this sphere at a given point
+    * @param {type} point Point on the sphere to get the normal of
+    * @returns {Vect}
+    */
+   exports.Sphere.prototype.getNormal = function(point) {
+      return math.normalize(math.subtract(point, this.c));
+   };
+
+   /**
     * Get the string representation of this sphere
     * @returns {String} String representation of the Sphere
     */
@@ -194,10 +218,12 @@ var math = (function() {
     * A record of a collision between objects
     * @constructor
     * @classdesc A record of a collision between two objects
+    * @param {Number} t The time at which the collision occured
     * @param {Vect} point The position at which the collision occured
     * @param {Vect} normal The collision normal
     */
-   exports.CollisionRecord = function CollisionRecord(point, normal) {
+   exports.CollisionRecord = function CollisionRecord(t, point, normal) {
+      this.t = t || 0;
       this.point = point || new math.Vect();
       this.normal = normal || new math.Vect();
    };
@@ -361,6 +387,15 @@ var math = (function() {
    };
 
    /**
+    * Return a negated vector
+    * @param {type} v The vector to negate
+    * @returns {Vect} The negated vector
+    */
+   exports.negate = function(v) {
+      return new math.Vect(-v.x, -v.y, -v.z);
+   };
+
+   /**
     * Check that two Vect are equal within tolerance
     * @param {type} v0 The first vector to be compared for equality
     * @param {type} v1 The second vector to be compared for equality
@@ -406,7 +441,7 @@ var math = (function() {
     * Collide a Ray with a Triangle
     * @param {Ray} ray The ray to cast for collision
     * @param {Triangle} tri The triangle to check for collision
-    * @returns {Number} Where along the ray the intersection occured
+    * @returns {CollisionRecord} The collision record of the intersection
     */
    exports.intersectRayTri = function(ray, tri) {
       var vecP2mP1 = math.subtract(tri.b, tri.a);
@@ -418,7 +453,8 @@ var math = (function() {
       // Can't be parallel
       if ((crossDot > -math.tolerance) && (crossDot < math.tolerance)) {
          //return false;
-         return math.NO_INTERSECTION;
+         //return math.NO_INTERSECTION;
+         return new math.CollisionRecord(math.NO_INTERSECTION);
       }
 
       var f = 1 / crossDot;
@@ -427,7 +463,8 @@ var math = (function() {
 
       if (u < 0.0 || u > 1.0) {
          //return false;
-         return math.NO_INTERSECTION;
+         //return math.NO_INTERSECTION;
+         return new math.CollisionRecord(math.NO_INTERSECTION);
       }
 
       var q = math.cross(vecPosToPoint, vecP2mP1);
@@ -435,25 +472,30 @@ var math = (function() {
 
       if (v < 0.0 || u + v > 1.0) {
          //return false;
-         return math.NO_INTERSECTION;
+         //return math.NO_INTERSECTION;
+         return new math.CollisionRecord(math.NO_INTERSECTION);
       }
 
       var t = f * math.dot(vecP3mP1, q);
 
       if (t <= 0) {
          //return false;
-         return math.NO_INTERSECTION;
+         //return math.NO_INTERSECTION;
+         return new math.CollisionRecord(math.NO_INTERSECTION);
       }
 
       //return math.add(ray.o, math.scale(ray.dir, t));
-      return t;
+      //return t;
+      tri.normal = (math.dot(ray.dir, tri.normal) > 0 ? math.negate(tri.normal) : tri.normal);
+      return new math.CollisionRecord(t, ray.getPoint(t), tri.normal);
+
    };
 
    /**
     * Collide a Ray with a Sphere
     * @param {Ray} ray The ray to cast for collision
     * @param {Sphere} sphere the Sphere to check for collision
-    * @returns {Number} Where along the ray the intersection occured
+    * @returns {CollisionRecord} The collision of the ray and sphere
     */
    exports.intersectRaySphere = function(ray, sphere) {
 
@@ -469,13 +511,15 @@ var math = (function() {
          // and the center of the sphere is greater than the radius
          if (math.magnitude(raySphereDist) > sphere.r) {
             //return false;
-            return math.NO_INTERSECTION;
+            //return math.NO_INTERSECTION;
+            return new math.CollisionRecord(math.NO_INTERSECTION);
          }
          // If the radius is the same as the distance, then there is one 
          // intersection and it is at the origin of the ray
          else if (math.equalityNumber(math.magnitude(raySphereDist), sphere.r)) {
             //return new math.Vect(ray.o.x, ray.o.y, ray.o.z);
-            return 0;
+            //return 0;
+            return new math.CollisionRecord(0, ray.o);
          }
          // Otherwise the ray starts in the sphere
          else {
@@ -484,7 +528,10 @@ var math = (function() {
             distToCollisionPoint = Math.sqrt((sphere.r * sphere.r) - (distProjToSphereSqrt * distProjToSphereSqrt));
             t = math.magnitude(math.subtract(math.subtract(projSphereRay, ray.o), distToCollisionPoint));
             //return math.add(ray.o, math.scale(ray.dir, t));
-            return t;
+            //return t;
+            var point = ray.getPoint(t);
+            return new math.CollisionRecord(t, point, math.normalize(math.subtract(point, sphere.c)));
+
          }
       }
       // Otherwise the sphere is somewhere in front of the ray
@@ -496,7 +543,8 @@ var math = (function() {
          // sphere is less than the radius of the sphere
          if (math.magnitude(math.subtract(sphere.c, projSphereRay)) > sphere.r) {
             //return false;
-            return math.NO_INTERSECTION;
+            //return math.NO_INTERSECTION;
+            return new math.CollisionRecord(math.NO_INTERSECTION);
          }
          else {
             distProjToSphereSqrt = math.magnitude(math.subtract(projSphereRay, sphere.c));
@@ -508,18 +556,21 @@ var math = (function() {
                t = (math.magnitude(math.subtract(projSphereRay, ray.o)) + distToCollisionPoint);
             }
             //return math.add(ray.o, math.scale(ray.dir, t));
-            return t;
+            //return t;
+            var point = ray.getPoint(t);
+            return new math.CollisionRecord(t, point, math.normalize(math.subtract(point, sphere.c)));
          }
       }
 
-      return math.NO_INTERSECTION;
+      //return math.NO_INTERSECTION;
+      return new math.CollisionRecord(math.NO_INTERSECTION);
    };
 
    /**
     * Try and intersect two objects
     * @param {Object} a The collider object of the collision check
     * @param {Object} b The collidee object of the collision check
-    * @returns {Number} The penetration depth of the collision if there was one
+    * @returns {CollisionRecord} The record of collision
     */
    exports.intersect = function(a, b) {
       // Intersect Ray and Triangle
@@ -530,6 +581,70 @@ var math = (function() {
       // Intersect Ray and Sphere
       if (a instanceof math.Ray && b instanceof math.Sphere) {
          return math.intersectRaySphere(a, b);
+      }
+   };
+
+   /**
+    * Namespace to hold random generation function
+    * @namespace randomizer
+    */
+   exports.randomizer = {
+      /**
+       * Create a random floating point Vect between a minimum and a maximum
+       * @param {type} minX
+       * @param {type} maxX
+       * @param {type} minY
+       * @param {type} maxY
+       * @param {type} minZ
+       * @param {type} maxZ
+       * @returns {Vect}
+       */
+      randomVectFloat: function(minX, maxX, minY, maxY, minZ, maxZ) {
+         return new math.Vect(
+                 ((Math.random() * (maxX - minX)) + minX),
+                 ((Math.random() * (maxY - minY)) + minY),
+                 ((Math.random() * (maxZ - minZ)) + minZ));
+      },
+      /**
+       * Create a random integer Vect between a minimum and a maximum
+       * @param {type} minX
+       * @param {type} maxX
+       * @param {type} minY
+       * @param {type} maxY
+       * @param {type} minZ
+       * @param {type} maxZ
+       * @returns {Vect}
+       */
+      randomVectInt: function(minX, maxX, minY, maxY, minZ, maxZ) {
+         return new math.Vect(
+                 Math.round((Math.random() * (maxX - minX)) + minX),
+                 Math.round((Math.random() * (maxY - minY)) + minY),
+                 Math.round((Math.random() * (maxZ - minZ)) + minZ));
+      },
+      /**
+       * Create a random triangle
+       * @returns {Triangle} A randomly generated Triangle
+       */
+      randomTri: function() {
+         var tri =
+                 new math.Triangle(
+                         math.randomizer.randomVectFloat(-5, 5, -5, 5, -20, -10),
+                         math.randomizer.randomVectFloat(-5, 5, -5, 5, -20, -10),
+                         math.randomizer.randomVectFloat(-5, 5, -5, 5, -20, -10));
+         tri.color = math.randomizer.randomVectInt(0, 255, 0, 255, 0, 255);
+         return tri;
+      },
+      /**
+       * Create a random Sphere
+       * @returns {Sphere} A randomly generated Sphere
+       */
+      randomSphere: function() {
+         var sphere =
+                 new math.Sphere(
+                         math.randomizer.randomVectFloat(-5, 5, -5, 5, -20, -10),
+                         (Math.random() * 0.5) + 0.5);
+         sphere.color = math.randomizer.randomVectInt(0, 255, 0, 255, 0, 255);
+         return sphere;
       }
    };
 

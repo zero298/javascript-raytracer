@@ -19,27 +19,29 @@ var tracer = (function() {
 
    /**
     * Cast a Ray against triangles
-    * @param {Ray} ray
+    * @param {Ray} ray The ray to cast with
     * @returns {Boolean} Whether there was a collision
     */
    exports.castRay = function(ray) {
-      var nearest = Number.MAX_VALUE;
-      var s = -1;
+      var nearest = new math.CollisionRecord(math.getNoIntersection());//Number.MAX_VALUE;
+      var result = new math.CollisionRecord(math.getNoIntersection());
+      var nearestShapeIndex = -1;
       for (var i = 0; i < shapes.length; i++) {
-         var result = math.intersect(ray, shapes[i]);
+         // Get the intersection result
+         result = math.intersect(ray, shapes[i]);
 
-         if (result < nearest) {
+         // Keep track of the nearest shape
+         if (result.t < nearest.t) {
             nearest = result;
-            s = i;
+            nearestShapeIndex = i;
          }
-
-         //nearest = (result < nearest ? result : nearest);
-
       }
 
-      var color = (s > -1 ? shapes[s].color : new math.Vect());
+      var color = (nearestShapeIndex > -1 ? shapes[nearestShapeIndex].color : new math.Vect());
+
       return {
-         t: nearest,
+         t: nearest.t,
+         n: nearest.normal,
          c: color
       };
    };
@@ -52,29 +54,29 @@ var tracer = (function() {
       shapes.push(shape);
    };
 
-   function randomVect() {
-      return new math.Vect(
-              ((Math.random() * 10) - 5),
-              ((Math.random() * 10) - 5),
-              ((Math.random() * -10) - 10));
-   }
-
+   /**
+    * Add random shapes to the tracer
+    * @param {Number} num The number of shapes to add
+    */
    exports.randomShapes = function(num) {
       num = num || 100;
+      var shape;
       for (var i = 0; i < num; i++) {
+         switch (Math.ceil(Math.random() * 2)) {
+            case 1:
+               shape = math.randomizer.randomTri();
+               break;
+            case 2:
+               shape = math.randomizer.randomSphere();
+               break;
+            default:
+               shape = math.randomizer.randomSphere();
+               console.log("Shouldn't be here: " + switchvar);
+               break;
 
-         var tri =
-                 new math.Triangle(
-                         randomVect(),
-                         randomVect(),
-                         randomVect());
-
-         tri.color = new math.Vect(
-                 Math.floor(Math.random() * 255),
-                 Math.floor(Math.random() * 255),
-                 Math.floor(Math.random() * 255));
-
-         tracer.addShape(tri);
+         }
+         // Add the shape
+         tracer.addShape(shape);
       }
    };
 
@@ -97,6 +99,9 @@ var tracer = (function() {
               xInc = ((1 / viewport.width) * Math.tan(fovX)),
               yInc = ((1 / viewport.height) * Math.tan(fovY));
 
+      // Lets pretend we already have a point light to use
+      var lightPos = new math.Vect(10, 10, 10);
+
       // Iterate over each pixel in viewport and cast a ray through it
       for (var j = 0; j < viewport.height; j++) {
          for (var i = 0; i < viewport.width; i++) {
@@ -108,18 +113,39 @@ var tracer = (function() {
             // Create a ray to cast
             var ray = new math.Ray(new math.Vect(), new math.Vect(x, y, -1));
 
-            // If we intersect, change that pixel's color
+            // See which pixel we're altering
             var index = ((i + j * viewport.width) * 4);
 
+            // Get the cast result
             var result = tracer.castRay(ray);
 
-//            console.log(result.c.x);
-
+            // If we intersect, change that pixel's color
             if (result.t !== math.NO_INTERSECTION) {
-               arr[index + 0] = result.c.x;
-               arr[index + 1] = result.c.y;
-               arr[index + 2] = result.c.z;
-               ;
+
+               // Get the intersection point
+               var intersectionPoint = ray.getPoint(result.t);
+
+               // Get the direction to the light
+               var dirToLight = math.normalize(math.subtract(lightPos, intersectionPoint));
+
+               // Get a color to work with
+               var color = new math.Vect(result.c.x, result.c.y, result.c.z);
+
+               // Get the normal of the intersection
+               var normal = new math.Vect(result.n.x, result.n.y, result.n.z);
+
+               // Get the normal dot the light direction
+               var NdotL = math.dot(normal, dirToLight);
+
+               // Scale the color with the NdotL
+               var ambient = math.scale(color, 0.5);
+               var diffuse = math.scale(color, NdotL);
+               var finalColor = math.add(ambient, diffuse);
+
+               // Set the pixel color
+               arr[index + 0] = finalColor.x;
+               arr[index + 1] = finalColor.y;
+               arr[index + 2] = finalColor.z;
                arr[index + 3] = 255;
             }
          }
@@ -150,6 +176,11 @@ self.onmessage = function(e) {
          // TODO: See if there is a better way to reinstanciate objects when sent to worker
          case "random":
             tracer.randomShapes();
+
+            self.postMessage({
+               type: "Notification",
+               message: "Random shapes added"
+            });
             break;
          case "viewport":
             // Get data

@@ -51,7 +51,7 @@ MathTest.prototype.testRaySphereIntersection = function() {
                            // Sphere in front of ray
                            new math.Sphere(
                                    new math.Vect(0, 0, -5),
-                                   1))),
+                                   1)).t),
            // Tolerance
            math.getTolerance());
 
@@ -66,7 +66,7 @@ MathTest.prototype.testRaySphereIntersection = function() {
                            // Sphere at origin
                            new math.Sphere(
                                    new math.Vect(0, 0, 0),
-                                   1))),
+                                   1)).t),
            // Tolerance
            math.getTolerance());
 
@@ -81,7 +81,7 @@ MathTest.prototype.testRaySphereIntersection = function() {
                            // Sphere in front of ray
                            new math.Sphere(
                                    new math.Vect(0, 0, 1),
-                                   1))),
+                                   1)).t),
            // Tolerance
            math.getTolerance());
 
@@ -92,7 +92,7 @@ MathTest.prototype.testRaySphereIntersection = function() {
                    ray,
                    new math.Sphere(
                            new math.Vect(0, 5, -5),
-                           0.5)));
+                           0.5)).t);
 };
 
 // Test intersection of ray and triangle
@@ -110,7 +110,7 @@ MathTest.prototype.testRayTriangleIntersection = function() {
                            new math.Triangle(
                                    new math.Vect(-1, -1, -5),
                                    new math.Vect(1, -1, -5),
-                                   new math.Vect(0, 1, -5)))),
+                                   new math.Vect(0, 1, -5))).t),
            math.getTolerance());
 
    // Ray should not intersect
@@ -121,5 +121,5 @@ MathTest.prototype.testRayTriangleIntersection = function() {
                    new math.Triangle(
                            new math.Vect(-1, -1, 5),
                            new math.Vect(1, -1, 5),
-                           new math.Vect(0, 1, 5))));
+                           new math.Vect(0, 1, 5))).t);
 };
