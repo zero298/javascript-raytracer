@@ -8,6 +8,16 @@
 // Load our math library
 importScripts("math.js");
 
+
+var logger = {
+   log: ((typeof (console) === undefined) ? console.log : function() {
+   }),
+   profile: ((typeof (console) === undefined) ? console.profile : function() {
+   }),
+   profileEnd: ((typeof (console) === undefined) ? console.profileEnd : function() {
+   })
+};
+
 /**
  * JavaScript Ray Tracer
  * @namespace tracer
@@ -70,9 +80,8 @@ var tracer = (function() {
                break;
             default:
                shape = math.randomizer.randomSphere();
-               console.log("Shouldn't be here: " + switchvar);
+               logger.log("Shouldn't be here: " + switchvar);
                break;
-
          }
          // Add the shape
          tracer.addShape(shape);
@@ -217,13 +226,12 @@ self.onmessage = function(e) {
                     data.near, data.far, data.fov);
 
             // Send back results
-            console.profile("Tracer Profile");
+            logger.profile("Tracer Profile");
             var result = tracer.trace(viewport);
-            console.profileEnd("Tracer Profile");
+            logger.profileEnd("Tracer Profile");
 
             self.postMessage({
-               type: "result",
-               data: result
+               type: "result",               data: result
             });
             break;
          case "clearshapes":
